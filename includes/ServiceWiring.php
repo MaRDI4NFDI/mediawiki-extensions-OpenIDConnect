@@ -27,7 +27,7 @@ use MediaWiki\MediaWikiServices;
 return [
 	'OpenIDConnectClient' =>
 		static function ( MediaWikiServices $services ): OpenIDConnectClient {
-			return new OpenIDConnectClient();
+			return new OpenIDConnectSessionClient( $services->getAuthManager() );
 		},
 	'OpenIDConnectStore' =>
 		static function ( MediaWikiServices $services ): OpenIDConnectStore {
