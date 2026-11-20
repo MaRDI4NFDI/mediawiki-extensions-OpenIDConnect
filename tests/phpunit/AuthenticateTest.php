@@ -43,6 +43,7 @@ class AuthenticateTest extends MediaWikiIntegrationTestCase {
 			'getIdToken',
 			'getIdTokenPayload',
 			'getRefreshToken',
+			'refreshToken',
 			'setWellKnownConfigParameters',
 			'setCodeChallengeMethod',
 			'setTokenEndpointAuthMethodsSupported',
@@ -550,5 +551,40 @@ class AuthenticateTest extends MediaWikiIntegrationTestCase {
 		$oidc->init( 'configId', $config );
 		$result = $oidc->authenticate( $id, $username, $realname, $email, $errorMessage );
 		$this->assertTrue( $result, 'authenticate auth methods result' );
+	}
+
+	/**
+	 * @covers \MediaWiki\Extension\OpenIDConnect\OpenIDConnect::getAttributes
+	 */
+	public function testGetAttributesWithOpaqueAccessToken() {
+		$config =
+			[
+				'plugin' => 'OpenIDConnect',
+				'data' => [
+					'providerURL' => 'https://provider.url.com',
+					'clientID' => 'clientIDvalue',
+					'clientsecret' => 'clientsecretvalue',
+				]
+			];
+		$client = $this->getClient( $config, true, null, 'Jane Smith', 'jane.smith@example.com' );
+		$client->method( 'getRefreshToken' )->willReturn( 'dummyrefreshtoken' );
+		$client->method( 'refreshToken' )->willReturn( (object)[] );
+
+		$services = $this->getServiceContainer();
+		$oidc = new OpenIDConnect(
+			$services->getMainConfig(),
+			$services->getAuthManager(),
+			$client,
+			$services->getUserIdentityLookup(),
+			$services->get( 'UserNameUtils' ),
+			$services->get( 'OpenIDConnectStore' ),
+			$services->getTitleFactory(),
+			$services->getGlobalIdGenerator(),
+			$services->getUserFactory()
+		);
+		$oidc->init( 'configId', $config );
+		$oidc->authenticate( $id, $username, $realname, $email, $errorMessage );
+
+		$this->assertSame( [], $oidc->getAttributes( $this->getTestUser()->getUserIdentity() ) );
 	}
 }

@@ -567,7 +567,7 @@ class OpenIDConnect extends PluggableAuth implements BackchannelLogoutAwarePlugi
 			&& ( $accessToken['exp'] >= time() - 300 );
 	}
 
-	private function refreshAccessToken( bool $returnPayload = true ): ?string {
+	private function refreshAccessToken( bool $returnPayload = true ): array|string|null {
 		$refreshToken = $this->getSessionSecret( self::OIDC_REFRESHTOKEN_SESSION_KEY );
 		if ( $refreshToken ) {
 			$json = $this->openIDConnectClient->refreshToken( $refreshToken );
